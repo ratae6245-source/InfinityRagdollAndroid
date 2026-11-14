@@ -28,7 +28,7 @@ jobs:
       - name: Configure Android SDK
         shell: bash
         run: |
-          echo "ANDROID_HOME=${ANDROID_HOME}" >> "$GITHUB_ENV"
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
           echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
           SDKMANAGER=$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)
           echo "SDKMANAGER=$SDKMANAGER" >> "$GITHUB_ENV"
@@ -43,11 +43,20 @@ jobs:
           "$SDKMANAGER" "platforms;android-35"
           "$SDKMANAGER" "build-tools;35.0.0"
 
-      - name: Prepare Gradle
-        run: chmod +x gradlew
+      - name: Install Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Check project files
+        run: |
+          echo "Repository contents:"
+          ls -la
+          echo "Android app contents:"
+          ls -la app || true
 
       - name: Compile APK
-        run: ./gradlew assembleDebug --stacktrace
+        run: gradle assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
