@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>INFINITY RAGDOLL</title>
+<style>
+:root{--glass:rgba(8,13,27,.78);--line:rgba(255,255,255,.18)}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050812;color:#fff;font-family:system-ui,Arial,sans-serif;touch-action:none}
+canvas{display:block}#hud{position:fixed;inset:0;pointer-events:none}
+.panel{background:var(--glass);border:1px solid var(--line);border-radius:14px;backdrop-filter:blur(9px);box-shadow:0 8px 30px #0007}
+#brand{position:absolute;top:12px;left:12px;padding:9px 13px;font-weight:900;letter-spacing:1.5px;font-size:14px}
+#status{position:absolute;top:12px;right:12px;padding:8px 12px;font-size:12px;text-align:right}
+#help{position:absolute;left:12px;bottom:12px;padding:9px 12px;font-size:11px;line-height:1.45;max-width:260px;color:#d8e2ff}
+#gembar{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:6px;padding:7px}
+.gem{pointer-events:auto;border:1px solid #ffffff44;background:#10182dcc;color:#fff;border-radius:10px;width:45px;height:48px;font-size:21px;display:grid;place-items:center;position:relative}
+.gem small{font-size:8px;position:absolute;bottom:3px;letter-spacing:.3px}
+.gem.active{outline:2px solid #fff;box-shadow:0 0 18px currentColor}
+#actions{position:absolute;right:12px;bottom:82px;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+.action{pointer-events:auto;border:1px solid #ffffff44;background:#141d33e8;color:#fff;border-radius:12px;padding:11px 14px;font-weight:700;min-width:104px}
+#power{background:linear-gradient(135deg,#6231c9,#172f75);border-color:#a68cff}
+#god{background:linear-gradient(135deg,#e2a52a,#a52d58);border-color:#ffe08a}
+#joystick{position:absolute;left:22px;bottom:85px;width:112px;height:112px;border-radius:50%;background:#ffffff14;border:2px solid #ffffff55;pointer-events:auto;touch-action:none}
+#stick{position:absolute;left:32px;top:32px;width:44px;height:44px;border-radius:50%;background:#dbe7ff88;border:1px solid #fff}
+#lookhint{position:absolute;right:12px;bottom:12px;font-size:10px;color:#b9c8e9}
+#toast{position:absolute;top:70px;left:50%;transform:translateX(-50%);padding:8px 13px;font-size:12px;opacity:0;transition:opacity .2s}
+#cross{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:20px;color:#fff9}
+#overlay{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(circle,#18254aee,#030611f5);z-index:5}
+#startbox{max-width:440px;margin:20px;padding:25px;text-align:center}
+#startbox h1{font-size:30px;margin:0 0 6px;letter-spacing:2px}
+#startbox p{color:#cbd6f4;font-size:13px;line-height:1.5}
+#start{pointer-events:auto;background:linear-gradient(110deg,#6635d8,#1688c5);border:0;border-radius:12px;color:white;padding:13px 25px;font-size:16px;font-weight:900}
+@media(max-width:600px){#brand{font-size:11px}#help{display:none}#gembar{bottom:9px;gap:3px}.gem{width:39px;height:43px;font-size:18px}#actions{bottom:72px}.action{min-width:90px;padding:10px;font-size:12px}#joystick{width:100px;height:100px;left:15px;bottom:72px}#stick{left:27px;top:27px}#lookhint{display:none}}
+</style>
+</head>
+<body>
+<div id="overlay"><div id="startbox" class="panel">
+<h1>INFINITY RAGDOLL</h1><div style="color:#9c83ff;font-weight:800;letter-spacing:3px">SANDBOX 3D</div>
+<p>Consigue las seis gemas, experimenta con sus poderes y desata el modo DIOS.<br>Diseñado para PC y pantallas táctiles Android.</p>
+<button id="start">ENTRAR AL SANDBOX</button>
+<p style="font-size:10px">Prototipo jugable · Requiere conexión para cargar el motor 3D</p>
+</div></div>
+<div id="hud">
+<div id="brand" class="panel">💎 INFINITY RAGDOLL</div>
+<div id="status" class="panel">GEMA: <b id="gemname">PODER</b><br>ENERGÍA: <b id="energy">100%</b><br>NPC: <b id="npcnum">3</b></div>
+<div id="toast" class="panel"></div><div id="cross">＋</div>
+<div id="help" class="panel">WASD: moverse · ESPACIO: saltar<br>Mouse: mirar · Click: poder<br>E: recoger/soltar · Q: siguiente gema<br>1–6: seleccionar gema · G: modo DIOS</div>
+<div id="joystick"><div id="stick"></div></div>
+<div id="actions"><button id="power" class="action">✦ USAR PODER</button><button id="grab" class="action">✋ AGARRAR</button><button id="god" class="action">⚡ MODO DIOS</button></div>
+<div id="gembar" class="panel">
+<button class="gem active" data-g="0" style="color:#c58cff">💜<small>PODER</small></button>
+<button class="gem" data-g="1" style="color:#69caff">🔵<small>ESPACIO</small></button>
+<button class="gem" data-g="2" style="color:#ff7777">🔴<small>REALIDAD</small></button>
+<button class="gem" data-g="3" style="color:#ffb45c">🟠<small>ALMA</small></button>
+<button class="gem" data-g="4" style="color:#7dff9a">🟢<small>TIEMPO</small></button>
+<button class="gem" data-g="5" style="color:#fff17b">🟡<small>MENTE</small></button>
+</div>
+<div id="lookhint">Arrastra el lado derecho para mirar</div>
+</div>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","cannon-es":"https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import * as CANNON from 'cannon-es';
+
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x080d1b);scene.fog=new THREE.Fog(0x080d1b,35,105);
+const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,.1,180);
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;document.body.prepend(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0x9bbcff,0x202033,1.35));
+const sun=new THREE.DirectionalLight(0xffffff,2.1);sun.position.set(-15,25,12);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);scene.add(sun);
+const world=new CANNON.World({gravity:new CANNON.Vec3(0,-9.82,0)});world.broadphase=new CANNON.SAPBroadphase(world);world.allowSleep=true;world.defaultContactMaterial.friction=.55;
+const mat=new CANNON.Material('solid');world.defaultContactMaterial.contactEquationStiffness=1e8;
+const mats={};
+function physMat(name,fr=.5){mats[name]=new CANNON.Material(name);world.addContactMaterial(new CANNON.ContactMaterial(mats[name],mats[name],{friction:fr,restitution:.12}));return mats[name]}
+const solid=physMat('solid'),bouncy=physMat('bouncy',.25);
+function boxMesh(x,y,z,sx,sy,sz,color,body=true,mass=0,material=solid){
+ const geo=new THREE.BoxGeometry(sx,sy,sz),mesh=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color,roughness:.78,metalness:.12}));
+ mesh.position.set(x,y,z);mesh.castShadow=true;mesh.receiveShadow=true;scene.add(mesh);
+ if(body){const b=new CANNON.Body({mass,material});b.addShape(new CANNON.Box(new CANNON.Vec3(sx/2,sy/2,sz/2)));b.position.set(x,y,z);b.linearDamping=.12;b.angularDamping=.2;world.addBody(b);objects.push({mesh,body:b});}
+ return mesh;
+}
+const objects=[];
+const floor=boxMesh(0,-.5,0,100,1,100,0x202b43,true,0);
+for(let i=0;i<18;i++){let x=(Math.random()-.5)*55,z=(Math.random()-.5)*55;if(Math.abs(x)<5&&Math.abs(z)<5)x+=10;boxMesh(x,.7,z,1.4,1.4,1.4,[0x4c628a,0x65728c,0x3e526f][i%3],true,2, i%4===0?bouncy:solid)}
+// Ruined test buildings and platforms
+for(let j=0;j<4;j++){let x=-23+j*15;for(let k=0;k<3;k++)boxMesh(x,1.5+k*3,-17,5,2.8,5,0x35445f,true,0);boxMesh(x,6,-17,5.3,.5,5.3,0x71809a,true,0)}
+for(let i=0;i<8;i++)boxMesh(-12+i*3,2,12,2.8,.5,2.8,0x526a91,true,0);
+const player={pos:new THREE.Vector3(0,1,5),yaw:0,pitch:0,vel:new THREE.Vector3(),onGround:false};
+const playerMesh=new THREE.Group();const bodyMat=new THREE.MeshStandardMaterial({color:0x68baff,roughness:.4});
+const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.42,.65,4,8),bodyMat);torso.position.y=1.25;playerMesh.add(torso);
+const head=new THREE.Mesh(new THREE.SphereGeometry(.28,12,10),new THREE.MeshStandardMaterial({color:0xe6c6a4}));head.position.y=1.95;playerMesh.add(head);
+const armGeo=new THREE.CapsuleGeometry(.12,.55,3,6),legGeo=new THREE.CapsuleGeometry(.15,.62,3,6);
+for(let s of [-1,1]){let a=new THREE.Mesh(armGeo,bodyMat);a.position.set(s*.55,1.28,0);playerMesh.add(a);let l=new THREE.Mesh(legGeo,bodyMat);l.position.set(s*.22,.43,0);playerMesh.add(l)}
+scene.add(playerMesh);
+// Ragdoll dummies: linked visual segments, each segment simulated as independent physical body
+const npcs=[];
+function makeNpc(x,z){
+ const parts=[];const skin=new THREE.MeshStandardMaterial({color:0xd2a77c});
+ function part(y,sx,sy,sz,col=0x9eafc8,m=1){const mesh=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),new THREE.MeshStandardMaterial({color:col,roughness:.8}));mesh.castShadow=true;scene.add(mesh);const b=new CANNON.Body({mass:m,material:solid,linearDamping:.12,angularDamping:.25});b.addShape(new CANNON.Box(new CANNON.Vec3(sx/2,sy/2,sz/2)));b.position.set(x,y,z);world.addBody(b);parts.push({mesh,body:b});return b}
+ const pelvis=part(.95,.48,.35,.28,0x536a92),chest=part(1.48,.55,.65,.32,0x7892bb),headb=part(2.05,.32,.32,.32,0xd6b18f,.7);
+ const limbs=[];
+ for(const s of [-1,1]){limbs.push(part(1.48,.2,.65,.2,0x7892bb,.5));limbs.push(part(.53,.23,.7,.23,0x536a92,.7));}
+ const joints=[[pelvis,chest],[chest,headb],[chest,parts[3]],[chest,parts[5]],[pelvis,parts[4]],[pelvis,parts[6]]];
+ joints.forEach(([a,b])=>{const c=new CANNON.PointToPointConstraint(a,new CANNON.Vec3(0,.18,0),b,new CANNON.Vec3(0,-.25,0),3e4);world.addConstraint(c)});
+ npcs.push({parts,alive:true});return npcs[npcs.length-1];
+}
+makeNpc(5,0);makeNpc(-5,-2);makeNpc(3,-9);
+let selected=0,energy=100,god=false,held=null,timeScale=1,slowUntil=0,toastTimer;
+const names=['PODER','ESPACIO','REALIDAD','ALMA','TIEMPO','MENTE'],colors=[0xb65cff,0x39aaff,0xff4d57,0xff9b39,0x54ef79,0xffe45b];
+const gemname=document.querySelector('#gemname'),energyEl=document.querySelector('#energy'),toastEl=document.querySelector('#toast');
+function toast(t){toastEl.textContent=t;toastEl.style.opacity=1;clearTimeout(toastTimer);toastTimer=setTimeout(()=>toastEl.style.opacity=0,1500)}
+function selectGem(i){selected=(i+6)%6;document.querySelectorAll('.gem').forEach((b,j)=>b.classList.toggle('active',j===selected));gemname.textContent=names[selected];toast('GEMA '+names[selected]+' SELECCIONADA')}
+document.querySelectorAll('.gem').forEach(b=>b.addEventListener('click',()=>selectGem(+b.dataset.g)));
+function nearestObject(){let best=null,dist=8;for(const o of objects){const d=o.mesh.position.distanceTo(player.pos);if(d<dist){dist=d;best=o}}return best}
+function forward(){return new THREE.Vector3(-Math.sin(player.yaw),0,-Math.cos(player.yaw))}
+function usePower(){
+ if(!god&&energy<8){toast('ENERGÍA INSUFICIENTE');return}if(!god)energy-=8;
+ const dir=forward(),origin=player.pos.clone().add(new THREE.Vector3(0,1.4,0));
+ if(selected===0){ // power blast
+  for(const o of objects){const d=o.mesh.position.distanceTo(origin);if(d<13){let v=o.mesh.position.clone().sub(origin).normalize();o.body.applyImpulse(new CANNON.Vec3(v.x*(13-d)*2.5,Math.max(2,(13-d)*1.2),v.z*(13-d)*2.5),o.body.position)}}
+  npcs.forEach(n=>n.parts.forEach(p=>{let dx=p.body.position.x-origin.x,dz=p.body.position.z-origin.z,d=Math.hypot(dx,dz);if(d<14)p.body.applyImpulse(new CANNON.Vec3(dx*2,8,dz*2),p.body.position)}));flash(colors[0]);toast('¡ONDA DE ENERGÍA!');
+ }else if(selected===1){player.pos.addScaledVector(dir,9);player.pos.y=Math.max(1,player.pos.y);flash(colors[1]);toast('¡TELETRANSPORTE!')}
+ else if(selected===2){let o=nearestObject();if(o){const c=o.mesh.material.color.getHex();o.mesh.material.color.setHex(c===0xff3344?0x48d6a2:0xff3344);toast('REALIDAD ALTERADA')}else toast('ACÉRCATE A UN OBJETO')}
+ else if(selected===3){npcs.forEach(n=>n.parts.forEach(p=>{let d=Math.hypot(p.body.position.x-player.pos.x,p.body.position.z-player.pos.z);if(d<12)p.body.applyImpulse(new CANNON.Vec3(0,3,0),p.body.position)}));flash(colors[3]);toast('¡PULSO DEL ALMA!')}
+ else if(selected===4){timeScale=.22;slowUntil=performance.now()+3500;toast('¡TIEMPO RALENTIZADO!')}
+ else if(selected===5){const o=nearestObject();if(o){held=o;toast('OBJETO CONTROLADO: usa AGARRAR para soltar')}else{npcs.forEach(n=>n.parts.forEach(p=>{let d=Math.hypot(p.body.position.x-player.pos.x,p.body.position.z-player.pos.z);if(d<10)p.body.applyImpulse(new CANNON.Vec3(0,5,0),p.body.position)}));toast('¡PULSO TELEQUINÉTICO!')}}
+}
+function flash(color){const f=new THREE.PointLight(color,35,18);f.position.copy(player.pos).add(new THREE.Vector3(0,2,0));scene.add(f);setTimeout(()=>scene.remove(f),180)}
+function toggleGrab(){if(held){held=null;toast('OBJETO LIBERADO');return}let o=nearestObject();if(o){held=o;toast('OBJETO LEVITANDO')}else toast('NO HAY OBJETOS CERCA')}
+function godMode(){god=!god;document.querySelector('#god').textContent=god?'✦ DIOS ACTIVADO':'⚡ MODO DIOS';toast(god?'MODO DIOS ACTIVADO':'MODO DIOS DESACTIVADO')}
+document.querySelector('#power').onclick=usePower;document.querySelector('#grab').onclick=toggleGrab;document.querySelector('#god').onclick=godMode;
+document.querySelector('#start').onclick=()=>{document.querySelector('#overlay').style.display='none';toast('¡BIENVENIDO AL SANDBOX!');};
+const keys={};addEventListener('keydown',e=>{keys[e.code]=true;if(/^Digit[1-6]$/.test(e.code))selectGem(+e.code.slice(5)-1);if(e.code==='KeyQ')selectGem(selected+1);if(e.code==='KeyG')godMode();if(e.code==='KeyE')toggleGrab();if(e.code==='Space'&&player.onGround)player.vel.y=7});
+addEventListener('keyup',e=>keys[e.code]=false);
+let joy={x:0,y:0},joyOn=false;const joyEl=document.querySelector('#joystick'),stick=document.querySelector('#stick');
+joyEl.addEventListener('pointerdown',e=>{joyOn=true;joyEl.setPointerCapture(e.pointerId);moveJoy(e)});
+joyEl.addEventListener('pointermove',e=>{if(joyOn)moveJoy(e)});
+function moveJoy(e){const r=joyEl.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dx=e.clientX-cx,dy=e.clientY-cy,len=Math.hypot(dx,dy),m=Math.min(1,len/38);joy.x=len?dx/len*m:0;joy.y=len?dy/len*m:0;stick.style.transform=`translate(${joy.x*30}px,${joy.y*30}px)`}
+function endJoy(){joyOn=false;joy.x=joy.y=0;stick.style.transform=''}
+joyEl.addEventListener('pointerup',endJoy);joyEl.addEventListener('pointercancel',endJoy);
+let lookPointer=null,lastX=0,lastY=0;
+renderer.domElement.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'){lookPointer=e.pointerId;lastX=e.clientX;lastY=e.clientY;renderer.domElement.setPointerCapture(e.pointerId)}else if(e.clientX>innerWidth*.42){lookPointer=e.pointerId;lastX=e.clientX;lastY=e.clientY;renderer.domElement.setPointerCapture(e.pointerId)}});
+renderer.domElement.addEventListener('pointermove',e=>{if(lookPointer===e.pointerId){let dx=e.clientX-lastX,dy=e.clientY-lastY;player.yaw-=dx*.006;player.pitch=Math.max(-.8,Math.min(.8,player.pitch-dy*.004));lastX=e.clientX;lastY=e.clientY}});
+renderer.domElement.addEventListener('pointerup',e=>{if(lookPointer===e.pointerId)lookPointer=null});
+renderer.domElement.addEventListener('click',e=>{if(e.pointerType==='mouse'&&document.querySelector('#overlay').style.display==='none')usePower()});
+const clock=new THREE.Clock();let last=performance.now();
+function animate(now){
+ requestAnimationFrame(animate);let dt=Math.min(clock.getDelta(),.033);
+ if(now>slowUntil)timeScale=1;let simdt=dt*timeScale;
+ const f=forward(),right=new THREE.Vector3(-f.z,0,f.x);let mx=(keys.KeyD?1:0)-(keys.KeyA?1:0)+joy.x,mz=(keys.KeyS?1:0)-(keys.KeyW?1:0)+joy.y;
+ const move=new THREE.Vector3().addScaledVector(right,mx).addScaledVector(f,-mz);if(move.length()>1)move.normalize();
+ const speed=(keys.ShiftLeft?8:5)*(god?1.4:1);player.pos.addScaledVector(move,speed*dt);player.vel.y-=18*dt;player.pos.y+=player.vel.y*dt;
+ if(player.pos.y<1){player.pos.y=1;player.vel.y=0;player.onGround=true}else player.onGround=false;
+ player.pos.x=Math.max(-47,Math.min(47,player.pos.x));player.pos.z=Math.max(-47,Math.min(47,player.pos.z));
+ playerMesh.position.copy(player.pos);playerMesh.rotation.y=player.yaw;
+ if(held){const target=player.pos.clone().add(new THREE.Vector3(0,2,0)).addScaledVector(f,3);held.body.wakeUp();held.body.velocity.set((target.x-held.body.position.x)*5,(target.y-held.body.position.y)*5,(target.z-held.body.position.z)*5)}
+ world.step(1/60,simdt,3);
+ for(const o of objects){o.mesh.position.copy(o.body.position);o.mesh.quaternion.copy(o.body.quaternion)}
+ for(const n of npcs)for(const p of n.parts){p.mesh.position.copy(p.body.position);p.mesh.quaternion.copy(p.body.quaternion)}
+ camera.position.set(player.pos.x+Math.sin(player.yaw)*7,player.pos.y+3.1+player.pitch*2,player.pos.z+Math.cos(player.yaw)*7);camera.lookAt(player.pos.x,player.pos.y+1.2,player.pos.z);
+ energy=Math.min(100,energy+dt*(god?0:3));energyEl.textContent=Math.floor(energy)+'%';document.querySelector('#npcnum').textContent=npcs.length;
+ renderer.render(scene,camera);
+}
+requestAnimationFrame(animate);
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.6))});
+</script>
+</body></html>
