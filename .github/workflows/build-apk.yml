@@ -27,15 +27,15 @@ jobs:
 
       - name: Configure Android SDK
         uses: android-actions/setup-android@v3
-        with:
-          accept-android-sdk-licenses: true
+
+      - name: Accept Android licenses
+        run: yes | sdkmanager --licenses || true
 
       - name: Install SDK packages
-        shell: bash
         run: |
-          sdkmanager --install "platform-tools"
-          sdkmanager --install "platforms;android-35"
-          sdkmanager --install "build-tools;35.0.0"
+          sdkmanager "platform-tools"
+          sdkmanager "platforms;android-35"
+          sdkmanager "build-tools;35.0.0"
 
       - name: Prepare Gradle
         run: chmod +x gradlew
