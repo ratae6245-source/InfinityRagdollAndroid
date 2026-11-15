@@ -1,14 +1,14 @@
+
 plugins {
     id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
 }
 
 android {
-    namespace 'com.infinityragdoll.game'
+    namespace 'com.infinityragdoll'
     compileSdk 35
 
     defaultConfig {
-        applicationId 'com.infinityragdoll.game'
+        applicationId 'com.infinityragdoll'
         minSdk 26
         targetSdk 35
         versionCode 1
